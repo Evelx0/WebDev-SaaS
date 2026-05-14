@@ -3,13 +3,6 @@ Design &  Deploy Websites for Leads Automatically using LLM models.
 
 WebDev SaaS is a TypeScript SaaS-style admin app for agencies, operators, and internal sales teams. It turns a Google Business Profile or Maps URL into an enriched lead record, optional research context, an AI-generated static demo website, a Vercel deployment, and a tailored outreach pitch.
 
-This public repo has been scrubbed for open-source release:
-
-- No local `.env` files or personal credentials are included.
-- Domain defaults use placeholders like `example.com` and `panel.example.com`.
-- The bundled `landing/` site is a generic starter, not personal branding.
-- Local build artifacts and editor-specific folders are excluded.
-
 ## What It Does
 
 - Authenticated admin panel built with React, Vite, Express, Prisma, PostgreSQL, Redis, and BullMQ
@@ -249,7 +242,6 @@ See [.env.example](./.env.example) for the full list. Important ones:
 - The included `landing/` site is intentionally generic starter content. Replace the copy, contact details, and domain values before using it in production.
 - `.env.example` is safe to commit. Real `.env` files are ignored.
 - The repo includes an MIT license as a sensible default for public release.
-- `package.json` remains `"private": true` to prevent accidental npm publishing. That does not affect publishing the code to GitHub.
 
 ## 8. First Run Checklist
 
