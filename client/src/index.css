@@ -1,0 +1,143 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body, #root { height: 100%; }
+body {
+  font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  @apply bg-ink-50 dark:bg-ink-950 text-ink-900 dark:text-ink-100;
+}
+
+@layer components {
+  .coreui-shell {
+    @apply min-h-full bg-ink-100 text-ink-900 dark:bg-ink-950 dark:text-ink-100 lg:flex;
+  }
+  .coreui-sidebar {
+    @apply fixed inset-y-0 left-0 z-40 flex w-64 -translate-x-full flex-col border-r border-white/10 bg-[#212631] text-white shadow-2xl transition-transform duration-200 lg:static lg:translate-x-0 lg:shadow-none;
+  }
+  .coreui-sidebar.is-open {
+    @apply translate-x-0;
+  }
+  .coreui-sidebar-header {
+    @apply flex min-h-16 items-center justify-between gap-3 border-b border-white/10 px-4;
+  }
+  .coreui-sidebar-nav {
+    @apply flex-1 space-y-1 overflow-y-auto px-3 py-4 text-sm;
+  }
+  .coreui-nav-title {
+    @apply px-3 pb-2 pt-3 text-[11px] font-semibold uppercase tracking-wide text-white/35;
+  }
+  .coreui-nav-link {
+    @apply flex items-center gap-3 rounded-md px-3 py-2.5 font-medium text-white/65 transition hover:bg-white/10 hover:text-white;
+  }
+  .coreui-nav-link.is-active {
+    @apply bg-accent-600 text-white shadow-sm shadow-black/20;
+  }
+  .coreui-nav-icon {
+    @apply h-5 w-5 shrink-0 text-current opacity-90;
+  }
+  .coreui-sidebar-footer {
+    @apply border-t border-white/10 p-4;
+  }
+  .coreui-sidebar-backdrop {
+    @apply fixed inset-0 z-30 bg-black/40 lg:hidden;
+  }
+  .coreui-wrapper {
+    @apply flex min-h-full min-w-0 flex-1 flex-col;
+  }
+  .coreui-topbar {
+    @apply sticky top-0 z-20 flex min-h-16 items-center justify-between gap-4 border-b border-ink-200 bg-white/90 px-4 backdrop-blur dark:border-ink-800 dark:bg-ink-900/90 sm:px-6 lg:px-8;
+  }
+  .coreui-main {
+    @apply min-h-0 flex-1;
+  }
+  .coreui-page {
+    @apply space-y-4 p-4 sm:p-6 lg:p-8;
+  }
+  .login-splash {
+    background:
+      linear-gradient(135deg, rgb(33 38 49 / 0.96), rgb(12 20 32 / 0.92)),
+      repeating-linear-gradient(90deg, rgb(255 255 255 / 0.06) 0 1px, transparent 1px 96px),
+      repeating-linear-gradient(0deg, rgb(255 255 255 / 0.045) 0 1px, transparent 1px 96px),
+      #0c1420;
+  }
+  .coreui-icon-button {
+    @apply inline-flex h-10 w-10 flex-col items-center justify-center gap-1.5 rounded-md border border-ink-200 bg-white text-ink-700 transition hover:bg-ink-50 dark:border-ink-700 dark:bg-ink-800 dark:text-ink-200 dark:hover:bg-ink-700;
+  }
+  .coreui-card-header {
+    @apply flex items-center justify-between gap-4 border-b border-ink-100 bg-white px-5 py-4 dark:border-ink-700 dark:bg-ink-800;
+  }
+  .coreui-card-title {
+    @apply text-sm font-semibold text-ink-900 dark:text-ink-100;
+  }
+  .coreui-card-subtitle {
+    @apply mt-0.5 text-xs text-ink-500 dark:text-ink-400;
+  }
+  .coreui-widget {
+    @apply rounded-lg p-5 shadow-soft;
+  }
+  .coreui-widget-primary {
+    @apply bg-blue-600;
+  }
+  .coreui-widget-success {
+    @apply bg-emerald-600;
+  }
+  .coreui-widget-warning {
+    @apply bg-amber-500;
+  }
+  .coreui-widget-danger {
+    @apply bg-rose-600;
+  }
+  .coreui-widget-icon {
+    @apply grid h-12 w-12 place-items-center rounded-md bg-white/15 text-white/85;
+  }
+  .coreui-widget-icon svg {
+    @apply h-7 w-7;
+  }
+  .coreui-table {
+    @apply w-full text-left text-sm;
+  }
+  .coreui-table thead {
+    @apply border-b border-ink-100 bg-ink-50 text-xs uppercase tracking-wide text-ink-500 dark:border-ink-700 dark:bg-ink-900/60 dark:text-ink-400;
+  }
+  .coreui-table th {
+    @apply px-5 py-3 font-semibold;
+  }
+  .coreui-table td {
+    @apply border-b border-ink-100 px-5 py-3 align-middle dark:border-ink-700/70;
+  }
+  .coreui-table tbody tr {
+    @apply hover:bg-ink-50/70 dark:hover:bg-ink-700/25;
+  }
+  .card {
+    @apply rounded-lg border border-ink-200 bg-white shadow-soft dark:border-ink-700 dark:bg-ink-800;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium border border-transparent transition disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-primary {
+    @apply btn bg-ink-900 dark:bg-ink-100 text-white dark:text-ink-900 hover:bg-ink-800 dark:hover:bg-ink-200;
+  }
+  .btn-secondary {
+    @apply btn bg-white dark:bg-ink-700 text-ink-900 dark:text-ink-100 border-ink-200 dark:border-ink-600 hover:bg-ink-50 dark:hover:bg-ink-600;
+  }
+  .btn-accent {
+    @apply btn bg-accent-600 text-white hover:bg-accent-700;
+  }
+  .btn-danger {
+    @apply btn bg-red-600 text-white hover:bg-red-700;
+  }
+  .btn-ghost {
+    @apply btn text-ink-600 dark:text-ink-400 hover:bg-ink-100 dark:hover:bg-ink-800;
+  }
+  .input {
+    @apply w-full px-3 py-2 rounded-md border border-ink-200 dark:border-ink-600 bg-white dark:bg-ink-800 text-sm text-ink-900 dark:text-ink-100 placeholder:text-ink-400 dark:placeholder:text-ink-500 focus:outline-none focus:ring-2 focus:ring-ink-900/10 dark:focus:ring-ink-100/10 focus:border-ink-400 dark:focus:border-ink-500;
+  }
+  .label {
+    @apply block text-xs font-medium text-ink-600 dark:text-ink-400 uppercase tracking-wide mb-1.5;
+  }
+  .badge {
+    @apply inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium border;
+  }
+}

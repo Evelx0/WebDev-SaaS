@@ -1,0 +1,253 @@
+// Lead Panel — Prisma schema
+// Designed to match the MVP technical spec (see PROJECT_NOTES.md).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                    String   @id @default(uuid()) @db.Uuid
+  email                 String   @unique
+  passwordHash          String   @map("password_hash")
+  name                  String?
+  role                  String   @default("user")
+  isActive              Boolean  @default(true) @map("is_active")
+  usageLimitPer24h      Int      @default(3) @map("usage_limit_per_24h")
+  vercelApiTokenEnc     String?  @map("vercel_api_token_enc")
+  vercelTeamId          String?  @map("vercel_team_id")
+  vercelProjectPrefix   String?  @map("vercel_project_prefix")
+  openrouterApiKeyEnc   String?  @map("openrouter_api_key_enc")
+  smtpHost              String?  @map("smtp_host")
+  smtpPort              Int?     @map("smtp_port")
+  smtpSecure            Boolean  @default(true) @map("smtp_secure")
+  smtpUsername          String?  @map("smtp_username")
+  smtpPasswordEnc       String?  @map("smtp_password_enc")
+  smtpFromName          String?  @map("smtp_from_name")
+  smtpFromEmail         String?  @map("smtp_from_email")
+  imapHost              String?  @map("imap_host")
+  imapPort              Int?     @map("imap_port")
+  imapSecure            Boolean  @default(true) @map("imap_secure")
+  imapUsername          String?  @map("imap_username")
+  imapPasswordEnc       String?  @map("imap_password_enc")
+  emailLastSyncedAt     DateTime? @map("email_last_synced_at") @db.Timestamptz(6)
+  createdAt             DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt             DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  leads Lead[]
+  emailThreads EmailThread[]
+  emailMessages EmailMessage[]
+
+  @@index([role])
+  @@map("users")
+}
+
+model Lead {
+  id                 String   @id @default(uuid()) @db.Uuid
+  businessName       String?  @map("business_name")
+  category           String?
+  googleProfileUrl   String   @map("google_profile_url")
+  googlePlaceId      String?  @unique @map("google_place_id")
+  addressLine1       String?  @map("address_line_1")
+  addressLine2       String?  @map("address_line_2")
+  city               String?
+  postcode           String?
+  country            String?  @default("GB")
+  phone              String?
+  email              String?
+  existingWebsiteUrl String?  @map("existing_website_url")
+  websiteStatus      String   @default("unknown") @map("website_status")
+  leadStatus         String   @default("new") @map("lead_status")
+  siteStatus         String   @default("not_started") @map("site_status")
+  vercelUrl          String?  @map("vercel_url")
+  lastError          String?  @map("last_error")
+  notes              String?
+  createdByUserId    String?  @map("created_by_user_id") @db.Uuid
+  createdBy          User?    @relation(fields: [createdByUserId], references: [id])
+  createdAt          DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  sources        LeadSource[]
+  jobs           SiteJob[]
+  generatedSites GeneratedSite[]
+  salesPitches   SalesPitch[]
+  emailThreads   EmailThread[]
+  emailMessages  EmailMessage[]
+
+  @@index([leadStatus], name: "idx_leads_status")
+  @@index([siteStatus], name: "idx_leads_site_status")
+  @@index([businessName], name: "idx_leads_business_name")
+  @@map("leads")
+}
+
+model LeadSource {
+  id            String   @id @default(uuid()) @db.Uuid
+  leadId        String   @map("lead_id") @db.Uuid
+  lead          Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  sourceType    String   @map("source_type")
+  sourceUrl     String?  @map("source_url")
+  rawData       Json?    @map("raw_data")
+  extractedData Json?    @map("extracted_data")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([leadId])
+  @@map("lead_sources")
+}
+
+model SiteJob {
+  id            String    @id @default(uuid()) @db.Uuid
+  leadId        String    @map("lead_id") @db.Uuid
+  lead          Lead      @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  jobType       String    @map("job_type")
+  status        String    @default("queued")
+  attemptCount  Int       @default(0) @map("attempt_count")
+  modelProvider String?   @map("model_provider")
+  modelName     String?   @map("model_name")
+  inputPayload  Json?     @map("input_payload")
+  outputPayload Json?     @map("output_payload")
+  errorMessage  String?   @map("error_message")
+  startedAt     DateTime? @map("started_at") @db.Timestamptz(6)
+  completedAt   DateTime? @map("completed_at") @db.Timestamptz(6)
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  logs           JobLog[]
+  generatedSites GeneratedSite[]
+
+  @@index([leadId], name: "idx_site_jobs_lead_id")
+  @@index([status], name: "idx_site_jobs_status")
+  @@map("site_jobs")
+}
+
+model GeneratedSite {
+  id                 String   @id @default(uuid()) @db.Uuid
+  leadId             String   @map("lead_id") @db.Uuid
+  lead               Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  siteJobId          String?  @map("site_job_id") @db.Uuid
+  siteJob            SiteJob? @relation(fields: [siteJobId], references: [id], onDelete: SetNull)
+  version            Int      @default(1)
+  siteTitle          String?  @map("site_title")
+  siteSummary        String?  @map("site_summary")
+  sourceFilesPath    String?  @map("source_files_path")
+  vercelProjectId    String?  @map("vercel_project_id")
+  vercelDeploymentId String?  @map("vercel_deployment_id")
+  vercelUrl          String?  @map("vercel_url")
+  generationPrompt   String?  @map("generation_prompt")
+  generationMetadata Json?    @map("generation_metadata")
+  createdAt          DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  salesPitches SalesPitch[]
+
+  @@index([leadId])
+  @@map("generated_sites")
+}
+
+model SalesPitch {
+  id                String         @id @default(uuid()) @db.Uuid
+  leadId            String         @map("lead_id") @db.Uuid
+  lead              Lead           @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  generatedSiteId   String?        @map("generated_site_id") @db.Uuid
+  generatedSite     GeneratedSite? @relation(fields: [generatedSiteId], references: [id], onDelete: SetNull)
+  // Provider that produced this pitch, e.g. 'openrouter' or 'mock'.
+  provider          String
+  // Model identifier reported by the provider, e.g. 'openrouter/auto' or 'mock-pitch-v0'.
+  model             String
+  // Whether the underlying call fell back to the local mock generator.
+  isMock            Boolean        @default(false) @map("is_mock")
+  // Structured pitch fields validated by Zod before insertion.
+  subjectLine       String         @map("subject_line")
+  openingLine       String         @map("opening_line")
+  painPoint         String         @map("pain_point")
+  valueProposition  String         @map("value_proposition")
+  demoReference     String         @map("demo_reference")
+  callToAction      String         @map("call_to_action")
+  fullEmailDraft    String         @map("full_email_draft")
+  linkedinMessage   String         @map("linkedin_message")
+  // Free-text operator notes that shaped this pitch.
+  operatorNotes     String?        @map("operator_notes")
+  // Raw JSON returned by the model, kept for audit/debug.
+  rawResponse       Json?          @map("raw_response")
+  createdAt         DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([leadId], name: "idx_sales_pitches_lead_id")
+  @@index([createdAt], name: "idx_sales_pitches_created_at")
+  @@map("sales_pitches")
+}
+
+model EmailThread {
+  id                 String    @id @default(uuid()) @db.Uuid
+  userId             String    @map("user_id") @db.Uuid
+  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  leadId             String?   @map("lead_id") @db.Uuid
+  lead               Lead?     @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  subject            String
+  normalizedSubject  String    @map("normalized_subject")
+  participantEmail   String    @map("participant_email")
+  participantName    String?   @map("participant_name")
+  lastMessageAt      DateTime  @map("last_message_at") @db.Timestamptz(6)
+  lastMessagePreview String?   @map("last_message_preview")
+  createdAt          DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  messages EmailMessage[]
+
+  @@unique([userId, participantEmail, normalizedSubject], name: "email_threads_user_participant_subject_key")
+  @@index([userId, lastMessageAt], name: "idx_email_threads_user_last_message")
+  @@index([leadId], name: "idx_email_threads_lead_id")
+  @@map("email_threads")
+}
+
+model EmailMessage {
+  id                String      @id @default(uuid()) @db.Uuid
+  userId            String      @map("user_id") @db.Uuid
+  user              User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  threadId          String      @map("thread_id") @db.Uuid
+  thread            EmailThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  leadId            String?     @map("lead_id") @db.Uuid
+  lead              Lead?       @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  syncKey           String      @map("sync_key")
+  folder            String
+  direction         String
+  deliveryStatus    String      @default("received") @map("delivery_status")
+  externalMessageId String?     @map("external_message_id")
+  messageIdHeader   String?     @map("message_id_header")
+  inReplyToHeader   String?     @map("in_reply_to_header")
+  referenceHeaders  String[]    @default([]) @map("reference_headers")
+  fromEmail         String      @map("from_email")
+  fromName          String?     @map("from_name")
+  toEmails          String[]    @default([]) @map("to_emails")
+  ccEmails          String[]    @default([]) @map("cc_emails")
+  bccEmails         String[]    @default([]) @map("bcc_emails")
+  subject           String
+  snippet           String?
+  textBody          String?     @map("text_body")
+  htmlBody          String?     @map("html_body")
+  errorMessage      String?     @map("error_message")
+  sentAt            DateTime?   @map("sent_at") @db.Timestamptz(6)
+  receivedAt        DateTime?   @map("received_at") @db.Timestamptz(6)
+  deliveredAt       DateTime?   @map("delivered_at") @db.Timestamptz(6)
+  createdAt         DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime    @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@unique([userId, syncKey], name: "email_messages_user_sync_key")
+  @@index([threadId, createdAt], name: "idx_email_messages_thread_created_at")
+  @@index([leadId], name: "idx_email_messages_lead_id")
+  @@index([userId, folder, createdAt], name: "idx_email_messages_user_folder_created_at")
+  @@map("email_messages")
+}
+
+model JobLog {
+  id        String   @id @default(uuid()) @db.Uuid
+  siteJobId String   @map("site_job_id") @db.Uuid
+  siteJob   SiteJob  @relation(fields: [siteJobId], references: [id], onDelete: Cascade)
+  level     String   @default("info")
+  message   String
+  metadata  Json?
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([siteJobId])
+  @@map("job_logs")
+}

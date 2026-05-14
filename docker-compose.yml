@@ -1,0 +1,81 @@
+services:
+  app:
+    build: .
+    image: lead-panel-app:latest
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://leadpanel:change_me@postgres:5432/leadpanel?schema=public}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    volumes:
+      - generated_sites:/app/generated-sites
+    # Run migrations on every boot, then start the server.
+    command: sh -c "npx prisma migrate deploy && node dist/server/index.js"
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"fetch('http://127.0.0.1:'+(process.env.PORT||3000)+'/api/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))\""]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  worker:
+    build: .
+    image: lead-panel-app:latest
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://leadpanel:change_me@postgres:5432/leadpanel?schema=public}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      app:
+        condition: service_started
+    volumes:
+      - generated_sites:/app/generated-sites
+    command: ["node", "dist/server/worker.js"]
+    # Disable healthcheck inherited from the image: the worker has no HTTP
+    # surface, so the image-level /api/health probe would always fail.
+    healthcheck:
+      disable: true
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: leadpanel
+      POSTGRES_USER: leadpanel
+      # WARNING: default password is a placeholder. Set POSTGRES_PASSWORD in your
+      # environment (e.g. via .env or shell export) before deploying. Do NOT ship
+      # `change_me` to production.
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change_me}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U leadpanel -d leadpanel"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+
+volumes:
+  postgres_data:
+  redis_data:
+  generated_sites:

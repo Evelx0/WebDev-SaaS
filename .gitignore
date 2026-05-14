@@ -1,0 +1,15 @@
+node_modules
+dist
+.env
+.env.*
+!.env.example
+.claude/
+.vs/
+.DS_Store
+*.log
+generated-sites/*
+!generated-sites/.gitkeep
+client/dist
+server/dist
+.vite
+coverage
