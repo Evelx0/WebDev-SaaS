@@ -6,4 +6,5 @@ dist
 !.env.example
 generated-sites/*
 *.log
+README.md
 PROJECT_NOTES.md
