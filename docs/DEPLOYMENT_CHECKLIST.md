@@ -8,8 +8,8 @@ This project deploys **two sites** from the same box, on different domains:
 
 | Role | Domain (default) | What it serves |
 |---|---|---|
-| Public landing | `tomlinsn.tech` (and optionally `www.tomlinsn.tech`) | Static one-page portfolio from `landing/` |
-| Private admin panel | `panel.tomlinsn.tech` | React admin UI + Express API/worker on `127.0.0.1:3000` |
+| Public landing | `example.tech` (and optionally `www.example.tech`) | Static one-page portfolio from `landing/` |
+| Private admin panel | `panel.example.tech` | React admin UI + Express API/worker on `127.0.0.1:3000` |
 
 - The two domains are configured separately in Nginx.
 - `APP_BASE_URL` always points at the **panel subdomain**, never the root domain.
@@ -21,9 +21,9 @@ This project deploys **two sites** from the same box, on different domains:
 - [ ] You have SSH access to the VPS.
 - [ ] You have copied or cloned this project onto the VPS.
 - [ ] DNS A (or AAAA) records exist for **both** the root domain and the panel subdomain, pointing at the VPS:
-  - [ ] `tomlinsn.tech` → VPS
-  - [ ] `www.tomlinsn.tech` → VPS (optional, recommended if serving www alias)
-  - [ ] `panel.tomlinsn.tech` → VPS
+  - [ ] `example.tech` → VPS
+  - [ ] `www.example.tech` → VPS (optional, recommended if serving www alias)
+  - [ ] `panel.example.tech` → VPS
 - [ ] You understand the **panel subdomain** is a private admin app and must not be left exposed without HTTPS and strong credentials. The root domain is public and intentional.
 
 ## Required secrets and accounts
@@ -52,16 +52,16 @@ chmod +x scripts/deploy-ubuntu-24-pm2.sh
 sudo ./scripts/deploy-ubuntu-24-pm2.sh
 ```
 
-The script asks for the app directory, **public root domain** (default `tomlinsn.tech`), whether to also serve `www.<root>` for the landing site, the **panel subdomain** (default `panel.tomlinsn.tech`), landing web root, Let's Encrypt email, Node.js major version, database password, session secret, admin credentials, provider API keys, Vercel details, and generated-sites directory.
+The script asks for the app directory, **public root domain** (default `example.tech`), whether to also serve `www.<root>` for the landing site, the **panel subdomain** (default `panel.example.tech`), landing web root, Let's Encrypt email, Node.js major version, database password, session secret, admin credentials, provider API keys, Vercel details, and generated-sites directory.
 
 - [ ] DNS for **both** the root domain and the panel subdomain already points at the VPS before running Certbot.
 - [ ] Script installs Node.js, PostgreSQL, Redis, Nginx, Certbot, and PM2.
-- [ ] Script syncs `landing/` to the landing web root (default `/var/www/tomlinsn-landing`).
+- [ ] Script syncs `landing/` to the landing web root (default `/var/www/example-landing`).
 - [ ] Script writes `.env` with `APP_BASE_URL=https://<panel-subdomain>`.
 - [ ] Script runs `npm ci`, typecheck, lint, build, Prisma generation, migrations, and seed.
 - [ ] Script starts `lead-panel-app` and `lead-panel-worker` in PM2.
 - [ ] Script configures **two Nginx server blocks** — root-domain landing site and panel-subdomain reverse proxy — and optionally provisions a single HTTPS certificate covering both (and `www` if selected).
-- [ ] After completion, verify the **landing site** by loading `https://tomlinsn.tech` in a browser.
+- [ ] After completion, verify the **landing site** by loading `https://example.tech` in a browser.
 - [ ] After completion, verify the **panel** with `pm2 status` and `curl -i http://127.0.0.1:3000/api/health`.
 - [ ] Confirm the landing page contains no admin links, no API keys, and no references to the panel subdomain.
 
@@ -94,7 +94,7 @@ cp .env.example .env
 Then edit `.env`.
 
 - [ ] Set `NODE_ENV=production`.
-- [ ] Set `APP_BASE_URL` to the **panel subdomain** URL, for example `https://panel.tomlinsn.tech`. Never set it to the root domain — the root domain is the public landing site, not the admin app.
+- [ ] Set `APP_BASE_URL` to the **panel subdomain** URL, for example `https://panel.example.tech`. Never set it to the root domain — the root domain is the public landing site, not the admin app.
 - [ ] Set `SESSION_SECRET`.
 - [ ] Set `ADMIN_EMAIL`.
 - [ ] Set `ADMIN_PASSWORD`.
@@ -171,8 +171,8 @@ Use Caddy or Nginx in front of the app. The PM2 deploy script (`scripts/deploy-u
 Example Caddyfile (panel subdomain reverse-proxies to the Node app; root domain serves the static `landing/` files):
 
 ```caddyfile
-tomlinsn.tech, www.tomlinsn.tech {
-  root * /var/www/tomlinsn-landing
+example.tech, www.example.tech {
+  root * /var/www/example-landing
   file_server
   encode gzip zstd
   header {
@@ -181,7 +181,7 @@ tomlinsn.tech, www.tomlinsn.tech {
   }
 }
 
-panel.tomlinsn.tech {
+panel.example.tech {
   reverse_proxy localhost:3000
 }
 ```
@@ -196,20 +196,20 @@ panel.tomlinsn.tech {
 
 ## Landing-site verification
 
-- [ ] Visit `https://tomlinsn.tech` and confirm the landing page loads.
-- [ ] Visit `https://www.tomlinsn.tech` (if enabled) and confirm it serves the landing page (not a redirect loop).
+- [ ] Visit `https://example.tech` and confirm the landing page loads.
+- [ ] Visit `https://www.example.tech` (if enabled) and confirm it serves the landing page (not a redirect loop).
 - [ ] View page source and confirm no API keys, no admin URLs, no panel subdomain links, and no third-party trackers.
 - [ ] Confirm the page is responsive on mobile (320–480px wide).
 - [ ] Confirm the `mailto:` contact link uses the address you intend to receive enquiries on.
 - [ ] Re-publishing landing-only changes after editing `landing/`:
   ```bash
-  rsync -a --delete --exclude README.md /opt/lead-panel/landing/ /var/www/tomlinsn-landing/
+  rsync -a --delete --exclude README.md /opt/lead-panel/landing/ /var/www/example-landing/
   systemctl reload nginx
   ```
 
 ## First login (panel subdomain)
 
-- [ ] Visit the **panel subdomain** URL (e.g. `https://panel.tomlinsn.tech`).
+- [ ] Visit the **panel subdomain** URL (e.g. `https://panel.example.tech`).
 - [ ] Log in with `ADMIN_EMAIL` and `ADMIN_PASSWORD`.
 - [ ] Confirm the dashboard loads.
 - [ ] Confirm the Jobs page loads.
