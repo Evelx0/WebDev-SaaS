@@ -4,14 +4,14 @@ Operating context for Codex and coding agents. Read before making changes.
 
 ## What this project is
 
-Lead Panel is becoming a SaaS-style admin app: users log in, paste a Google Business Profile URL, enrich their own lead, generate a static demo website, deploy it to Vercel, then generate a tailored sales pitch. Admin users use the platform `.env` Vercel/OpenRouter settings and are uncapped; normal users must provide Vercel settings and can optionally provide their own OpenRouter key to remove the rolling usage cap. Runs on a VPS at `panel.tomlinsn.tech`. No automated email sending exists yet.
+Lead Panel is becoming a SaaS-style admin app: users log in, paste a Google Business Profile URL, enrich their own lead, generate a static demo website, deploy it to Vercel, then generate a tailored sales pitch. Admin users use the platform `.env` Vercel/OpenRouter settings and are uncapped; normal users must provide Vercel settings and can optionally provide their own OpenRouter key to remove the rolling usage cap. Runs on a VPS at `panel.example.tech`. No automated email sending exists yet.
 
 ## Two sites in one repo
 
 | Site | Source | Served by | Domain |
 |------|--------|-----------|--------|
-| Public landing page | `landing/` — static HTML/CSS/JS, no build step | Nginx directly from `/var/www/tomlinsn-landing` | `tomlinsn.tech` |
-| Admin panel | `client/` + `server/` | Nginx → reverse proxy → Node :3000 | `panel.tomlinsn.tech` |
+| Public landing page | `landing/` — static HTML/CSS/JS, no build step | Nginx directly from `/var/www/example-landing` | `example.tech` |
+| Admin panel | `client/` + `server/` | Nginx → reverse proxy → Node :3000 | `panel.example.tech` |
 
 Never link the landing site into the panel. No API keys, env vars, or admin URLs in `landing/`.
 
@@ -188,7 +188,7 @@ The deterministic fallback renderer (no AI key) produces `index.html` only — n
 
 ## Landing page (`landing/`)
 
-Static HTML/CSS/JS, no build step. Served by Nginx from `/var/www/tomlinsn-landing`. To deploy: `rsync` or `scp` the three files + images; no PM2 restart needed.
+Static HTML/CSS/JS, no build step. Served by Nginx from `/var/www/example-landing`. To deploy: `rsync` or `scp` the three files + images; no PM2 restart needed.
 
 **Design system — "Tidal Slate":**
 - Always-dark palette: `--bg: #0c1420`, `--accent: #35d9ab` (teal), `--stone: #c8a050` (gold), `--ink: #e6e0d3`
